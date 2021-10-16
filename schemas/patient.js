@@ -1,15 +1,14 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema
 
 const PatientSchema = new mongoose.Schema({
-    first_name: {
+    firstName: {
         type: String,
         minLength: 1,
         maxLength: 60,
         lowercase: true,
         required: [true, "First name is required"]
     },
-    last_name: {
+    lastName: {
         type: String,
         minLength: 1,
         maxLength: 60,
@@ -24,11 +23,11 @@ const PatientSchema = new mongoose.Schema({
     },
     gender: {
         type:String,
-        enum: ["Male", "Female", "Other"],
+        enum: ["male", "female", "other"],
         required: [true, "gender is required"]
     },
     symptoms: [Number],
-    notes:{type:String,maxLength:5000}
+    notes:{type:String, maxLength:5000}
 })
 
 module.exports = mongoose.model("patient", PatientSchema);

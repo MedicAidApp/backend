@@ -36,6 +36,7 @@ async function saveRandUser(){
             molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum
             numquam blanditiis harum quisquam eius sed odit fugiat iusto.`
         }
+        console.log(data, ",");
         const newPatient = new Patient(data);
         await newPatient.save();
     }
