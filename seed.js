@@ -27,6 +27,7 @@ async function saveRandUser(){
     {
         const fakeProfile = (await axios.get("https://randomuser.me/api/")).data.results[0];
         const data = {
+            "email": fakeProfile.email,
             "gender": fakeProfile.gender,
             "firstName": fakeProfile.name.first,
             "lastName": fakeProfile.name.last,

@@ -5,6 +5,8 @@ const bodyParser = require("body-parser");
 const asyncCatch = require("./utils/asyncCatch");
 const AppError = require("./utils/ExpressError.js");
 const Patient = require("./schemas/patient");
+const Appointment = require("./schemas/appointment");
+const patient = require("./schemas/patient");
 //const session = require("express-session");
 
 //TODO: add to routes
@@ -50,7 +52,9 @@ app.post("/patient/new", asyncCatch(async (req, res) =>{
 
 /*View a patient page*/
 app.get("/patient/:id", asyncCatch(async(req, res)=>{
+    //TODO: Will show the patients info as well as the appointments
     const patient = await Patient.findById(req.params.id);
+    patient.populate("appointments");
     res.send(patient);
 }));
 
@@ -74,6 +78,22 @@ app.delete("/patient/:id", asyncCatch(async(req, res)=>{
     res.redirect("/patient");
 
 }))
+
+/*Create a new appointment*/
+app.post("/patient/:id/appointment", asyncCatch(async (req, res)=>{
+    const data = req.body[0]; /*{date:year/month/day, status:"Completed"/"Pending"/"Cancelled/Incomplete", notes:"String", patient: ObjectId}*/
+    const patient = await Patient.findById(req.params.id);
+    const newAppointment = new Appointment(data);
+    patient.appointments.push(newAppointment);
+    await patient.save();
+    await newAppointment.save();
+    res.redirect(`/patient/${req.params.id}`);
+}));
+
+/*Edit an appointment*/
+app.put("/patient/:id/appointment", asyncCatch(async (req, res)=>{
+
+}));
 
 app.all('*', (req, res, next)=>{
     next(new AppError(404, "Page Not Found"))
