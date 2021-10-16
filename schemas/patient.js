@@ -27,7 +27,8 @@ const PatientSchema = new mongoose.Schema({
         enum: ["Male", "Female", "Other"],
         required: [true, "gender is required"]
     },
-    symptoms: [Number]
+    symptoms: [Number],
+    notes:{type:String,maxLength:5000}
 })
 
 module.exports = mongoose.model("patient", PatientSchema);
