@@ -7,6 +7,7 @@ const AppError = require("./utils/ExpressError.js");
 const Patient = require("./schemas/patient");
 const Appointment = require("./schemas/appointment");
 const patient = require("./schemas/patient");
+const { findByIdAndUpdate } = require("./schemas/patient");
 //const session = require("express-session");
 
 //TODO: add to routes
@@ -24,6 +25,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.use(express.static("public"));
 app.use(bodyParser.json());
+
 
 /*Landing Page*/
 app.get("/", (req, res)=>{
@@ -72,38 +74,50 @@ app.put("/patient/:id", asyncCatch(async(req, res)=>{
 }));
 
 /*Delete a patient*/
+//TODO: Delete all appointments too
 app.delete("/patient/:id", asyncCatch(async(req, res)=>{
-    const id = req.params.id;
-    await Patient.findByIdAndDelete(id);
+    const patientId = req.params.id;
+    await Patient.findByIdAndDelete(patientId);
     res.redirect("/patient");
-
 }))
 
 /*Create a new appointment*/
-app.post("/patient/:id/appointment", asyncCatch(async (req, res)=>{
+app.post("/appointment", asyncCatch(async (req, res)=>{
     const data = req.body[0]; /*{date:year/month/day, status:"Completed"/"Pending"/"Cancelled/Incomplete", notes:"String", patient: ObjectId}*/
-    const patient = await Patient.findById(req.params.id);
+    const patient = await Patient.findById(data.patient);
     const newAppointment = new Appointment(data);
     patient.appointments.push(newAppointment);
     await patient.save();
     await newAppointment.save();
-    res.redirect(`/patient/${req.params.id}`);
+    res.redirect(`/patient/${data.patient}`);
 }));
 
 /*Edit an appointment*/
-app.put("/patient/:id/appointment", asyncCatch(async (req, res)=>{
+app.put("/appointment/:id", asyncCatch(async (req, res)=>{
+    const data = req.body[0]
+    await Appointment.findByIdAndUpdate(data.patient, {...data});
+    console.log({...req.body[0]});
+    res.redirect(`/patient/${data.patient}`);
+}));
 
+/*Delete an appointment*/
+app.delete("/appointment/:id", asyncCatch(async (req, res)=>{
+    const appointment = Appointment.findById(req.params.id);
+    const patient = Patient.findById(appointment["patient"]);
+    await Patient.updateOne(patient._id, {$pull:{appointments:req.params.id}});
+    await Appointment.deleteOne(req.params.id);
+    res.redirect(`/patient`);
 }));
 
 app.all('*', (req, res, next)=>{
     next(new AppError(404, "Page Not Found"))
 })
 
-/*app.use((err, req, res, next)=>{
+app.use((err, req, res, next)=>{
     const {status = 500, message="Internal Server Error"} = err
     res.status(status)
     res.send(`Error ${status}\n${message}`);
-})*/
+})
 
 app.listen(3000, ()=>{
     console.log("Connected")
