@@ -56,7 +56,6 @@ app.post("/patient/new", asyncCatch(async (req, res) =>{
 app.get("/patient/:id", asyncCatch(async(req, res)=>{
     //TODO: Will show the patients info as well as the appointments
     const patient = await Patient.findById(req.params.id);
-    patient.populate("appointments");
     res.send(patient);
 }));
 
@@ -102,11 +101,17 @@ app.put("/appointment/:id", asyncCatch(async (req, res)=>{
 
 /*Delete an appointment*/
 app.delete("/appointment/:id", asyncCatch(async (req, res)=>{
-    const appointment = Appointment.findById(req.params.id);
-    const patient = Patient.findById(appointment["patient"]);
-    await Patient.updateOne(patient._id, {$pull:{appointments:req.params.id}});
-    await Appointment.deleteOne(req.params.id);
-    res.redirect(`/patient`);
+    const appointmentId = req.params.id;
+    let patientId;
+    const appointment = Appointment.findById(appointmentId);
+    await appointment.populate().
+    exec(async function (err, story) {
+      if (err) return AppError(500, "Cant populate DB");
+      patientId = story.patient;
+      await Patient.findByIdAndUpdate(patientId, {$pull:{appointments:appointmentId}})
+    });
+    await Appointment.findByIdAndDelete(appointmentId);
+    res.redirect(`/patient/`);
 }));
 
 app.all('*', (req, res, next)=>{
