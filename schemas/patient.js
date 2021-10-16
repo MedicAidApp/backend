@@ -1,10 +1,20 @@
 const mongoose = require("mongoose");
 
 const PatientSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        unique: true,
+        required: 'Email address is required',
+        validate: [validateEmail, 'Please fill a valid email address'],
+        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+    },
     firstName: {
         type: String,
         minLength: 1,
         maxLength: 60,
+        trim: true,
         lowercase: true,
         required: [true, "First name is required"]
     },
@@ -12,6 +22,7 @@ const PatientSchema = new mongoose.Schema({
         type: String,
         minLength: 1,
         maxLength: 60,
+        trim: true,
         lowercase: true,
         required: [true, "Last name is required"]
     },
@@ -27,7 +38,13 @@ const PatientSchema = new mongoose.Schema({
         required: [true, "gender is required"]
     },
     symptoms: [Number],
-    notes:{type:String, maxLength:5000}
+    notes:{type:String, maxLength:5000},
+    appointments: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "appointment"
+        }
+    ]
 })
 
 module.exports = mongoose.model("patient", PatientSchema);
