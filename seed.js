@@ -1,14 +1,20 @@
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+
 const Patient = require("./schemas/patient");
+const Appointment = require("./schemas/appointment");
 const axios = require("axios");
 const mongoose = require("mongoose");
-
-mongoose.connect("mongodb://localhost:27017/medicaid");
+const dbURL = process.env.DB_URL;
 const db = mongoose.connection;
+
+
+mongoose.connect(dbURL);
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", ()=>{
     console.log("Database connected");
 });
-
 
 function randomNumber(min, max){return Math.floor(Math.random() * (max - min + 1)) + min;}
 
@@ -23,6 +29,8 @@ function randomArr(){
 
 async function saveRandUser(){
     await Patient.deleteMany({});
+    await Appointment.deleteMany({});
+
     for(let i = 0; i < 30; i++)
     {
         const fakeProfile = (await axios.get("https://randomuser.me/api/")).data.results[0];
